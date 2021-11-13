@@ -7,9 +7,8 @@ import (
 )
 
 type Config struct {
-	OutputFormat string
-	UserAgent    string
-	Endpoint     string
+	UserAgent string
+	Endpoint  string
 }
 
 type Coordinate float64

@@ -16,9 +16,13 @@ import (
 )
 
 func main () {
- 	geocoder, _ := gominatim.NewGominatim()
+	geocoder, err := gominatim.NewGominatim(gominatim.DefaultConfig())
+	if err != nil {
+		fmt.Println(err)
+		return
+	}
 
-	res, err = geocoder.Search(gominatim.SearchParameters{Country: "Germany", City: "Hamburg"})
+	res, err := geocoder.Search(gominatim.SearchParameters{Country: "Germany", City: "Hamburg"})
 	if err != nil {
 		fmt.Println(err)
 		return

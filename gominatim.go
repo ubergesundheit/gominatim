@@ -7,18 +7,34 @@ import (
 	"net/http"
 )
 
-func NewGominatim() (*Gominatim, error) {
+func DefaultConfig() Config {
+	return Config{
+		UserAgent: "gominatim",
+		Endpoint:  "https://nominatim.openstreetmap.org",
+	}
+}
+
+func NewGominatim(config Config) (*Gominatim, error) {
+	if config.Endpoint == "" {
+		return nil, fmt.Errorf("Endpoint must not be empty")
+	}
+	if config.UserAgent == "" {
+		return nil, fmt.Errorf("UserAgent must not be empty")
+	}
+
 	g := Gominatim{
-		config: Config{
-			UserAgent: "gominatim",
-			Endpoint:  "https://nominatim.openstreetmap.org",
-		},
+		config: config,
 	}
 
 	return &g, nil
 }
 
-func (g *Gominatim) request(requestURL string) ([]byte, error) {
+func (g *Gominatim) request(parameters SearchParameters) ([]byte, error) {
+	requestURL := fmt.Sprintf("%s/search?%s&format=geocodejson&limit=1",
+		g.config.Endpoint,
+		parameters.ToQuery(),
+	)
+
 	req, err := http.NewRequest("GET", requestURL, nil)
 	if err != nil {
 		return nil, err
@@ -40,14 +56,9 @@ func (g *Gominatim) request(requestURL string) ([]byte, error) {
 }
 
 func (g *Gominatim) Search(parameters SearchParameters) (GeoJSONResult, error) {
-	queryURL := fmt.Sprintf("%s/search?%s&format=geocodejson&limit=1",
-		g.config.Endpoint,
-		parameters.ToQuery(),
-	)
-
 	var geoJSONResp GeoJSONResult
 
-	respBytes, err := g.request(queryURL)
+	respBytes, err := g.request(parameters)
 	if err != nil {
 		return geoJSONResp, err
 	}
